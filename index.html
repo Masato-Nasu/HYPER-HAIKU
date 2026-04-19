@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+  <title>HYPER-HAIKU</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <section id="lockScreen" class="screen show lock-screen">
+    <div class="lock-card">
+      <div class="lock-brand">HYPER-HAIKU</div>
+      <div class="manifesto" aria-label="statement">
+        <p class="manifesto-en">Generation is creation.</p>
+        <p class="manifesto-ja">書くことだけを創作とはしない。</p>
+        <p class="manifesto-ja">見ること。選ぶこと。発生させること。</p>
+        <p class="manifesto-ja">そのすべてを、創作と呼ぶ。</p>
+      </div>
+      <label class="sr-only" for="keywordInput">起動キーワード</label>
+      <input id="keywordInput" class="text-input" type="password" placeholder="起動キーワード">
+      <button id="unlockBtn" class="primary-btn wide">起動する</button>
+      <div id="lockError" class="error-text" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <main id="appScreen" class="app-screen" hidden>
+    <header class="app-header">
+      <div class="brand-block">
+        <div class="brand-title">HYPER-HAIKU</div>
+      </div>
+      <button id="logoutBtn" class="ghost-btn">解除</button>
+    </header>
+
+    <section class="panel controls-panel">
+      <div class="panel-title">生成</div>
+      <input id="photoInput" type="file" accept="image/*" hidden>
+
+      <div class="mode-wrap" role="group" aria-label="生成モード">
+        <button id="modeHaikuBtn" class="mode-btn active" data-mode="haiku">俳句</button>
+        <button id="modeFreeBtn" class="mode-btn" data-mode="free">自由律</button>
+      </div>
+
+      <label class="field-label" for="noteInput">補助キーワード（任意）</label>
+      <input id="noteInput" class="text-input" type="text" placeholder="春、静けさ、都市、雨上がり など">
+
+      <div class="controls-grid two narrow-gap">
+        <button id="generateBtn" class="primary-btn">生成する</button>
+        <button id="stopCameraBtn" class="ghost-btn" disabled>カメラを閉じる</button>
+      </div>
+
+      <div id="statusText" class="status-text" aria-live="polite">写真選択またはカメラ撮影のあと、俳句か自由律を生成できます。</div>
+    </section>
+
+    <section class="preview-wrap">
+      <div class="photo-stage" id="photoStage">
+        <img id="photoPreview" alt="photo preview">
+        <video id="cameraPreview" class="camera-preview" autoplay playsinline muted></video>
+        <div class="brand-overlay">HYPER-HAIKU</div>
+        <div id="poemOverlay" class="poem-overlay"></div>
+        <div id="modeBadge" class="mode-badge">俳句</div>
+        <div id="emptyState" class="empty-state">写真を選択するか、カメラを開いてください</div>
+        <div class="stage-actions" aria-label="撮影操作">
+          <button id="pickPhotoBtn" class="stage-btn stage-btn-sub">写真を選択</button>
+          <button id="openCameraBtn" class="stage-btn stage-btn-sub">カメラを開く</button>
+          <button id="captureBtn" class="stage-btn stage-btn-main" disabled>撮影</button>
+          <button id="stopCameraBtn" class="stage-btn stage-btn-sub" disabled>カメラを閉じる</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="./app.js"></script>
+</body>
+</html>
