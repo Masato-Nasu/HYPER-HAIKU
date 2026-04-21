@@ -4,6 +4,12 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
   <title>HYPER-HAIKU</title>
+<meta name="theme-color" content="#000000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="./icons/icon-180.png">
   <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
@@ -45,6 +51,7 @@
 
       <div class="controls-grid two narrow-gap">
         <button id="generateBtn" class="primary-btn">生成する</button>
+        <button id="saveBtn" class="ghost-btn">JPEG保存</button>
         <button id="stopCameraBtn" class="ghost-btn" disabled>カメラを閉じる</button>
       </div>
 
@@ -69,6 +76,13 @@
     </section>
   </main>
 
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js').catch(() => {});
+    });
+  }
+</script>
   <script src="./app.js"></script>
 </body>
 </html>
