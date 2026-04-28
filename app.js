@@ -211,31 +211,149 @@ function shuffleArray(items) {
   return out;
 }
 
-function getKigoCandidatesFromDate(date) {
-  if (!date || Number.isNaN(date.getTime())) return [];
-  const month = date.getMonth() + 1;
-  const table = {
-    1: ['寒空', '寒月', '霜夜', '霜柱', '氷', '冬晴', '冬日', '寒椿', '枯木', '雪催', '小寒', '大寒'],
-    2: ['梅', '梅一輪', '余寒', '春寒', '薄氷', '雪解', '猫柳', '水温む', '東風', '春めく', '冴返る', '若布'],
-    3: ['霞', '朧', '啓蟄', '春の水', '柳', '雛', '彼岸', '菜の花', '若草', '木の芽', '山笑う', '淡雪'],
-    4: ['花曇', '桜', '花冷え', '春雨', '風光る', '春風', '卯月', '木の芽風', '山吹', '藤', '燕', '陽炎'],
-    5: ['若葉', '青葉', '新樹', '薫風', '立夏', '夏めく', '麦秋', '薄暑', '田植', '青嵐', '苺', '菖蒲'],
-    6: ['梅雨', '青梅', '夏草', '短夜', '麦の秋', '紫陽花', '五月雨', '蛍', '薄暑', '夏木立', '走り梅雨', '早苗'],
-    7: ['夕立', '蝉時雨', '青田', '夏雲', '風鈴', '土用', '炎天', '盛夏', '向日葵', '滴り', '雲の峰', '金魚'],
-    8: ['入道雲', '残暑', '秋近し', '晩夏', '朝顔', '月見草', '夕焼', '盆', '雷', '稲妻', '流星', '蜩'],
-    9: ['新涼', '虫の声', '月', '野分', '秋桜', '鰯雲', '秋灯', '名月', '露', '稲', '夜長', '爽やか'],
-    10: ['秋晴', '木の実', '鰯雲', '秋桜', '紅葉', '菊', '秋雨', '秋風', '稲刈', '雁', '実り', '霧'],
-    11: ['落葉', '初霜', '冬近し', '小春', '木枯', '山茶花', '時雨', '枯葉', '冬桜', '冬めく', '酉の市', '焚火'],
-    12: ['枯野', '冬空', '霜', '冬日', '寒椿', '師走', '冬木', '雪吊', '煤払', '年の暮', '寒波', '冬晴'],
-  };
-  return table[month] || [];
+const KIGO_MEMORY_KEY = 'hyperHaikuKigoHistoryV2';
+
+const KIGO_TABLE = {
+  1: ['寒空', '寒月', '霜夜', '霜柱', '氷', '冬晴', '冬日', '寒椿', '枯木', '雪催', '小寒', '大寒', '水仙', '炭火', '炭', '雪見', '枯野', '冬木立', '小春日和', '霜'],
+  2: ['梅', '梅一輪', '余寒', '春寒', '薄氷', '雪解け', '猫柳', '水温む', '東風', '春めく', '冴返る', '若布', '椿', '残雪', '雪残る', '春泥', '春愁'],
+  3: ['霞', '朧', '啓蟄', '春の水', '柳', '雛', '彼岸', '菜の花', '若草', '木の芽', '山笑う', '淡雪', 'うぐいす', 'すみれ草', 'たんぽぽ', '田打ち', '畑打ち', '土筆', '春の海', '春一番', '春雨', '雀の子', '桜草', '雲雀'],
+  4: ['桜', '花冷え', '春雨', '風光る', '春風', '卯月', '木の芽風', '山吹', '藤の花', '燕', '陽炎', '花見', '八十八夜', '茶つみ', '若鮎', '桜貝', '雪解け', '雲雀', '花曇'],
+  5: ['若葉', '青葉', '新樹', '薫風', '立夏', '夏めく', '麦秋', '薄暑', '田植え', '青嵐', '苺', '菖蒲', 'あやめ', 'こいのぼり', '衣がえ', '牡丹', 'ほととぎす', '万緑', '紫陽花', '五月雨', '躑躅', '早苗'],
+  6: ['梅雨', '青梅雨', '青梅', '夏草', '短夜', '麦の秋', '紫陽花', '五月雨', '蛍', '薄暑', '夏木立', '走り梅雨', '早苗', '菖蒲', '初鰹', '行水', '金魚', '夕焼け', '雷', '梅雨寒'],
+  7: ['夕立', '蝉時雨', '青田', '夏雲', '風鈴', '土用', '炎天', '盛夏', '向日葵', '滴り', '雲の峰', '金魚', '蝉', '甲虫', '浴衣', '花火', '青蛙', '大蛍', '片陰'],
+  8: ['入道雲', '残暑', '秋近し', '晩夏', '朝顔', '月見草', '夕焼け', '盆', '雷', '稲妻', '流星', '蜩', '青葉', '梅雨明け', '浴衣', '白南風'],
+  9: ['新涼', '虫の声', '月', '野分', '秋桜', '鰯雲', '秋灯', '名月', '露', '稲', '夜長', '爽やか', 'いわし雲', '月見', 'きりぎりす', '朝顔', 'こおろぎ', 'すすき', '桐', 'ぶどう', '栗', '残暑', '一葉', '盆踊り', '七夕', '秋の暮', '身に入む', '露寒'],
+  10: ['秋晴', '木の実', '鰯雲', '秋桜', '紅葉', '菊', '秋雨', '秋風', '稲刈り', '雁', '実り', '霧', '三日月', '十五夜', '名月', '啄木鳥', '萩', '夜長', '赤とんぼ', '天の川', '鈴虫', '彼岸花', '星月夜', '虫時雨'],
+  11: ['落葉', '初霜', '冬近し', '小春', '木枯', '山茶花', '時雨', '枯葉', '冬桜', '冬めく', '酉の市', '焚火', '枯れ木', '枯野', '小春日和', '鴨', '鶴', '白菜', '大根'],
+  12: ['枯野', '冬空', '霜', '冬日', '寒椿', '師走', '冬木', '雪吊', '煤払', '年の暮', '寒波', '冬晴', 'つらら', '枯れ尾花', '冬木立', '初雪', '落葉', '除夜の鐘', '冬灯', '寒昴'],
+};
+
+const KIGO_FEEL_TABLE = {
+  light: ['春の海', '春光', '風光る', '薫風', '若葉', '新樹', '白南風', '秋晴', '名月', '星月夜', '冬日', '冬灯', '寒月'],
+  wet: ['春雨', '春泥', '雪解け', '水温む', '梅雨', '青梅雨', '五月雨', '夕立', '時雨', '露', '露寒', '霜', '雪催'],
+  life: ['田打ち', '畑打ち', '茶つみ', 'こいのぼり', '衣がえ', '田植え', '行水', '浴衣', '花火', '月見', '運動会', '稲刈り', '焚火', 'みかん', '白菜', '大根'],
+  shadow: ['朧', '花冷え', '片陰', '夏木立', '短夜', '夜長', '秋の暮', '霧', '冬木立', '枯野', '霜夜'],
+  uncanny: ['余寒', '冴返る', '彼岸', '陽炎', '青嵐', '梅雨寒', '遠雷', '蜩', '野分', '身に入む', '木枯', '寒昴', '隙間風'],
+};
+
+const SEASON_KIGO_EXTRAS = {
+  春: ['朧', '春灯', '春泥', '山笑う', '鳥雲に', '花冷え', '春宵', '春愁', '水温む', '霞'],
+  夏: ['短夜', '青嵐', '白南風', '片陰', '夏座敷', '薄暑', '夕立', '梅雨寒', '青梅雨', '風鈴'],
+  秋: ['夜長', '虫時雨', '秋澄む', '身に入む', '露寒', '草の花', '秋思', '水澄む', '月', '野分'],
+  冬: ['冬ざれ', '息白し', '寒昴', '霜夜', '冬灯', '寒月', '枯野', '隙間風', '冴ゆ', '雪催'],
+};
+
+const ALL_KIGO_TERMS = Array.from(new Set([
+  ...Object.values(KIGO_TABLE).flat(),
+  ...Object.values(KIGO_FEEL_TABLE).flat(),
+  ...Object.values(SEASON_KIGO_EXTRAS).flat(),
+])).sort((a, b) => b.length - a.length);
+
+function uniqueTerms(items) {
+  return Array.from(new Set(items.map((item) => String(item || '').trim()).filter(Boolean)));
 }
 
+function getKigoHistory() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(KIGO_MEMORY_KEY) || '[]');
+    return Array.isArray(parsed) ? parsed.filter((item) => typeof item === 'string') : [];
+  } catch (_error) {
+    return [];
+  }
+}
+
+function saveKigoHistory(history) {
+  try {
+    localStorage.setItem(KIGO_MEMORY_KEY, JSON.stringify(history.slice(-24)));
+  } catch (_error) {
+    // localStorage can be unavailable in private mode.
+  }
+}
+
+function weightedShuffleKigo(items) {
+  const history = getKigoHistory();
+  return uniqueTerms(items)
+    .map((term, index) => {
+      const lastIndex = history.lastIndexOf(term);
+      const age = lastIndex >= 0 ? history.length - lastIndex : Infinity;
+      let weight = 1;
+      if (age <= 3) weight *= 0.08;
+      else if (age <= 8) weight *= 0.22;
+      else if (age <= 16) weight *= 0.48;
+      if (/花曇/.test(term)) weight *= 0.18;
+      return { term, score: Math.random() * weight - index * 0.00001 };
+    })
+    .sort((a, b) => b.score - a.score)
+    .map((item) => item.term);
+}
+
+function getKigoCandidateGroupsFromDate(date) {
+  if (!date || Number.isNaN(date.getTime())) return null;
+  const month = date.getMonth() + 1;
+  const season = getSeasonFromDate(date);
+  const prev = month === 1 ? 12 : month - 1;
+  const next = month === 12 ? 1 : month + 1;
+  const corePool = [
+    ...(KIGO_TABLE[month] || []),
+    ...(KIGO_TABLE[prev] || []).slice(0, 6),
+    ...(KIGO_TABLE[next] || []).slice(0, 6),
+    ...(SEASON_KIGO_EXTRAS[season] || []),
+  ];
+
+  return {
+    season,
+    core: weightedShuffleKigo(corePool).slice(0, 10),
+    light: weightedShuffleKigo([...(KIGO_FEEL_TABLE.light || []), ...corePool]).slice(0, 5),
+    wet: weightedShuffleKigo([...(KIGO_FEEL_TABLE.wet || []), ...corePool]).slice(0, 5),
+    life: weightedShuffleKigo([...(KIGO_FEEL_TABLE.life || []), ...corePool]).slice(0, 5),
+    shadow: weightedShuffleKigo([...(KIGO_FEEL_TABLE.shadow || []), ...corePool]).slice(0, 5),
+    uncanny: weightedShuffleKigo([...(KIGO_FEEL_TABLE.uncanny || []), ...corePool]).slice(0, 4),
+  };
+}
+
+function rememberKigoFromPoem(poem) {
+  const text = String(poem || '').replace(/[\s　]/g, '');
+  if (!text) return;
+  const hit = ALL_KIGO_TERMS.find((term) => term.length >= 2 && text.includes(term.replace(/[\s　]/g, '')));
+  if (!hit) return;
+  const history = getKigoHistory().filter((term) => term !== hit);
+  history.push(hit);
+  saveKigoHistory(history);
+}
+
+function getKigoCandidatesFromDate(date) {
+  const groups = getKigoCandidateGroupsFromDate(date);
+  if (!groups) return [];
+  return uniqueTerms([
+    ...groups.core,
+    ...groups.light,
+    ...groups.wet,
+    ...groups.life,
+    ...groups.shadow,
+    ...groups.uncanny,
+  ]);
+}
+
+
 function formatMetadataHint() {
-  const kigo = getKigoCandidatesFromDate(state.metadataDateIso ? new Date(state.metadataDateIso) : null);
-  if (!kigo.length) return '';
-  const sampled = shuffleArray(kigo).slice(0, 10);
-  return `撮影メタ情報からの季語候補: ${sampled.join('、')}。同じ季語に偏らないよう、この中から写真に合うやさしい季語をひとつ選ぶか、近い季語に言い換えてください。季節名は直接書かないこと。`;
+  const groups = getKigoCandidateGroupsFromDate(state.metadataDateIso ? new Date(state.metadataDateIso) : null);
+  if (!groups) return '';
+
+  const labels = [
+    ['季節', groups.core.slice(0, 8)],
+    ['光', groups.light.slice(0, 4)],
+    ['湿度', groups.wet.slice(0, 4)],
+    ['生活', groups.life.slice(0, 4)],
+    ['影', groups.shadow.slice(0, 4)],
+    ['違和感', groups.uncanny.slice(0, 3)],
+  ];
+  const parts = labels
+    .filter(([, items]) => items.length)
+    .map(([label, items]) => `${label}: ${items.join('、')}`);
+  const recent = getKigoHistory().slice(-8).reverse();
+  const recentHint = recent.length ? `直近で使った季語（${recent.join('、')}）はなるべく避けてください。` : '';
+
+  return `撮影メタ情報からの季語候補（${groups.season}）: ${parts.join(' / ')}。写真の視覚情報を最優先し、光・湿度・生活感・影・少しの違和感に合う季語を一つだけ選ぶか、近い季語へ言い換えてください。${recentHint}「花曇」「花曇り」は本当に必要な場合以外は使わないでください。季節名は直接書かないこと。`;
 }
 
 async function readFileAsDataUrl(file) {
@@ -437,6 +555,7 @@ async function generatePoem() {
     }
 
     state.poem = normalizePoem(data.poem || data.haiku, state.mode);
+    rememberKigoFromPoem(state.poem);
     updatePreview();
     setStatus(`${currentModeLabel()}を生成しました。JPEG保存できます。`);
   } catch (error) {
